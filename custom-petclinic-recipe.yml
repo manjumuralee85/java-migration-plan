@@ -1,0 +1,209 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.petclinic.CustomSpringPetClinicUpgrade
+displayName: Custom Spring PetClinic Upgrade for Your Project
+description: |
+  Tailored upgrade recipe for your Spring PetClinic instance:
+  - Already on Java 17 and Spring Boot 3.5.10
+  - Focus on critical H2 database security update
+  - Fine-tune existing dependencies
+  - Optimize for Spring Boot 3.x
+  
+  CRITICAL: Updates H2 from 1.4.200 (has security vulnerabilities!) to latest
+
+tags:
+  - java17
+  - spring-boot-3
+  - security
+  - petclinic
+
+recipeList:
+  #############################################################################
+  # CRITICAL SECURITY FIX - H2 Database
+  #############################################################################
+  
+  # H2 1.4.200 has CRITICAL security vulnerabilities (CVE-2022-45868)
+  # Update to latest stable version compatible with Spring Boot 3.x
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.h2database
+      artifactId: h2
+      newVersion: 2.2.224
+      
+  #############################################################################
+  # Fine-tune Spring Boot 3.x Dependencies
+  #############################################################################
+  
+  # Ensure all Spring Boot starters are on consistent version
+  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3
+  
+  #############################################################################
+  # Update WebJars to Latest Compatible Versions
+  #############################################################################
+  
+  # Bootstrap (you have 5.2.3, update to latest 5.x)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: bootstrap
+      newVersion: 5.3.3
+  
+  # jQuery (you have 3.6.4, update to latest 3.x)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: jquery
+      newVersion: 3.7.1
+  
+  # jQuery UI (you have 1.13.2, already latest)
+  # No change needed
+  
+  #############################################################################
+  # Update javax.cache to Jakarta Cache for Spring Boot 3
+  #############################################################################
+  
+  # Spring Boot 3 uses Jakarta EE, ensure cache API is compatible
+  - org.openrewrite.java.migrate.javax.MigrateCacheApiToJakartaCacheApi
+  
+  #############################################################################
+  # Update Jakarta EE Platform API
+  #############################################################################
+  
+  # You have 10.0.0, consider updating to latest
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.platform
+      artifactId: jakarta.jakartaee-api
+      newVersion: 10.0.0
+      # Already latest, but ensures it's explicit
+  
+  #############################################################################
+  # Update Maven Plugins
+  #############################################################################
+  
+  # Maven Surefire Plugin (you have 3.1.2, update to latest)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-plugin
+      newVersion: 3.2.5
+  
+  # Maven Compiler Plugin (you have 3.11.0, already latest)
+  # No change needed
+  
+  # JaCoCo (you have 0.8.10, update to latest)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.jacoco
+      artifactId: jacoco-maven-plugin
+      newVersion: 0.8.12
+  
+  #############################################################################
+  # Update OpenRewrite Dependencies in Plugin
+  #############################################################################
+  
+  # Update rewrite-migrate-java (you have 2.24.0)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.openrewrite.recipe
+      artifactId: rewrite-migrate-java
+      newVersion: 2.26.1
+  
+  # Update rewrite-java (you have 2.24.0)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.openrewrite.recipe
+      artifactId: rewrite-java
+      newVersion: 2.26.1
+  
+  #############################################################################
+  # Spring Boot 3 Specific Migrations
+  #############################################################################
+  
+  # Migrate from javax to jakarta namespace (critical for Spring Boot 3)
+  - org.openrewrite.java.migrate.jakarta.JavaxMigrationToJakarta
+  
+  # Update Spring Boot properties for 3.x
+  - org.openrewrite.java.spring.boot3.SpringBootProperties_3_3
+  
+  #############################################################################
+  # Code Modernization for Java 17
+  #############################################################################
+  
+  # Use Java 17 features
+  - org.openrewrite.java.migrate.UpgradeToJava17
+  
+  # Text blocks (Java 15+)
+  - org.openrewrite.java.migrate.lang.UseTextBlocks
+  
+  # Pattern matching instanceof (Java 16+)
+  - org.openrewrite.java.migrate.lang.UsePatternMatchingInstanceOf
+  
+  # Switch expressions (Java 14+)
+  - org.openrewrite.java.migrate.lang.SwitchExpressionMigration
+  
+  # Records (Java 16+) - where applicable
+  - org.openrewrite.java.migrate.lang.RecordMigration
+  
+  # Sealed classes (Java 17) - where applicable  
+  - org.openrewrite.staticanalysis.FinalClass
+  
+  #############################################################################
+  # Code Cleanup
+  #############################################################################
+  
+  # Remove unused imports (you already have this in activeRecipes)
+  - org.openrewrite.java.cleanup.RemoveUnusedImports
+  
+  # Use diamond operator
+  - org.openrewrite.java.cleanup.UseDiamondOperator
+  
+  # Simplify boolean expressions
+  - org.openrewrite.java.cleanup.SimplifyBooleanExpression
+  
+  # Remove unnecessary parentheses
+  - org.openrewrite.java.cleanup.UnnecessaryParentheses
+  
+  # Finalize local variables (Java 10+)
+  - org.openrewrite.staticanalysis.FinalizeLocalVariables
+  
+  # Empty block cleanup
+  - org.openrewrite.staticanalysis.EmptyBlock
+  
+  # Default comes last in switch
+  - org.openrewrite.staticanalysis.DefaultComesLast
+  
+  #############################################################################
+  # Security Updates
+  #############################################################################
+  
+  # Check for dependency vulnerabilities
+  - org.openrewrite.java.dependencies.DependencyVulnerabilityCheck
+  
+  # Upgrade to non-vulnerable versions
+  - org.openrewrite.java.dependencies.UpgradeTransitiveDependencyVersion:
+      groupId: "*"
+      artifactId: "*"
+      # Will upgrade transitive dependencies with known CVEs
+  
+  #############################################################################
+  # Testing Improvements
+  #############################################################################
+  
+  # JUnit 5 best practices (you're already on JUnit 5)
+  - org.openrewrite.java.testing.junit5.JUnit5BestPractices
+  
+  # Mockito cleanup
+  - org.openrewrite.java.testing.mockito.CleanupMockitoImports
+  
+  #############################################################################
+  # Spring Boot 3 Test Improvements
+  #############################################################################
+  
+  # Update test annotations
+  - org.openrewrite.java.spring.boot3.UpgradeSpringBootTestAnnotations
+  
+  #############################################################################
+  # Format and Style
+  #############################################################################
+  
+  # Auto-format code (you already have this in activeRecipes)
+  - org.openrewrite.java.format.AutoFormat
+  
+  # Organize imports
+  - org.openrewrite.java.format.Tabs2Spaces
+  
+  # Remove trailing whitespace
+  - org.openrewrite.java.format.RemoveTrailingWhitespace

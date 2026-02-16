@@ -1,0 +1,115 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.petclinic.Java8To11Migration
+displayName: Spring PetClinic Java 8 to 11 Migration
+description: Migrates Spring PetClinic from Java 8 to Java 11 with all dependency upgrades
+tags:
+  - java11
+  - spring-boot
+  - migration
+
+recipeList:
+  # Core Java Migration
+  - org.openrewrite.java.migrate.Java8toJava11
+  - org.openrewrite.java.migrate.JavaVersion11
+  
+  # Spring Boot Upgrade (2.x to latest compatible with Java 11)
+  - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
+  
+  # Add missing Java 11 dependencies (JAXB, JAX-WS removed from JDK)
+  - org.openrewrite.java.migrate.javax.AddJaxbDependencies
+  - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
+  - org.openrewrite.java.migrate.javax.AddJaxbRuntime
+  
+  # Update JUnit 4 to JUnit 5 (Jupiter)
+  - org.openrewrite.java.testing.junit5.JUnit4to5Migration
+  
+  # Modernize assertions
+  - org.openrewrite.java.testing.junit5.AssertToAssertions
+  
+  # Update Mockito
+  - org.openrewrite.java.testing.mockito.Mockito1to3Migration
+  
+  # Spring Framework updates
+  - org.openrewrite.java.spring.framework.UpgradeSpringFramework_5_3
+  
+  # Remove deprecated Spring Boot properties
+  - org.openrewrite.java.spring.boot2.SpringBootProperties_2_7
+  
+  # Update Maven plugins
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.11.0
+  
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-plugin
+      newVersion: 3.0.0
+  
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-maven-plugin
+      newVersion: 2.7.18
+  
+  # Update common dependencies
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.h2database
+      artifactId: h2
+      newVersion: 2.1.214
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.hibernate
+      artifactId: hibernate-validator
+      newVersion: 6.2.5.Final
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: bootstrap
+      newVersion: 5.2.3
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: jquery
+      newVersion: 3.6.4
+  
+  # Update testing dependencies
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.junit.jupiter
+      artifactId: junit-jupiter
+      newVersion: 5.9.3
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.mockito
+      artifactId: mockito-core
+      newVersion: 4.11.0
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.assertj
+      artifactId: assertj-core
+      newVersion: 3.24.2
+  
+  # Update Thymeleaf (used in PetClinic)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-thymeleaf
+      newVersion: 2.7.18
+  
+  # Update cache dependencies
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: javax.cache
+      artifactId: cache-api
+      newVersion: 1.1.1
+  
+  # Remove @Deprecated code
+  - org.openrewrite.java.cleanup.RemoveUnusedImports
+  - org.openrewrite.java.cleanup.UnnecessaryParentheses
+  
+  # Use diamond operator
+  - org.openrewrite.java.cleanup.UseDiamondOperator
+  
+  # Modernize code patterns
+  - org.openrewrite.java.migrate.lang.UseVarKeyword
+  - org.openrewrite.staticanalysis.DefaultComesLast
+  - org.openrewrite.staticanalysis.EmptyBlock
+  - org.openrewrite.staticanalysis.FinalizeLocalVariables

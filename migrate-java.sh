@@ -101,6 +101,25 @@ apply_openrewrite_migration() {
     log_info "Applying OpenRewrite migration recipes..."
     cd "$PROJECT_PATH"
     
+    # Check if custom recipe file exists
+    RECIPE_FILE=""
+    if [ -f "rewrite.yml" ]; then
+        RECIPE_FILE="rewrite.yml"
+        RECIPE_NAME="com.petclinic.SpringPetClinicJava11Upgrade"
+        log_info "Found custom recipe file: rewrite.yml"
+    elif [ -f "spring-petclinic-recipe.yml" ]; then
+        RECIPE_FILE="spring-petclinic-recipe.yml"
+        RECIPE_NAME="com.petclinic.SpringPetClinicJava11Upgrade"
+        log_info "Found custom recipe file: spring-petclinic-recipe.yml"
+    elif [ -f ".mvn/rewrite.yml" ]; then
+        RECIPE_FILE=".mvn/rewrite.yml"
+        RECIPE_NAME="com.petclinic.SpringPetClinicJava11Upgrade"
+        log_info "Found custom recipe file: .mvn/rewrite.yml"
+    else
+        log_warning "No custom recipe file found. Using default recipes."
+        RECIPE_NAME="org.openrewrite.java.migrate.Java8toJava11"
+    fi
+    
     # Check if OpenRewrite plugin is in pom.xml
     if ! grep -q "rewrite-maven-plugin" pom.xml; then
         log_info "Adding OpenRewrite plugin to pom.xml..."
@@ -116,14 +135,25 @@ apply_openrewrite_migration() {
                 <version>5.40.0</version>
                 <configuration>
                     <activeRecipes>
-                        <recipe>org.openrewrite.java.migrate.Java8toJava11</recipe>
+                        <recipe>com.petclinic.SpringPetClinicJava11Upgrade</recipe>
                     </activeRecipes>
+                    <configLocation>${project.basedir}/rewrite.yml</configLocation>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.openrewrite.recipe</groupId>
                         <artifactId>rewrite-migrate-java</artifactId>
                         <version>2.26.1</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.openrewrite.recipe</groupId>
+                        <artifactId>rewrite-spring</artifactId>
+                        <version>5.21.0</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.openrewrite.recipe</groupId>
+                        <artifactId>rewrite-testing-frameworks</artifactId>
+                        <version>2.19.0</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -134,9 +164,20 @@ EOF
     
     # Run OpenRewrite migration
     log_info "Running OpenRewrite migration to Java 11..."
-    mvn -U org.openrewrite.maven:rewrite-maven-plugin:run \
-        -Drewrite.activeRecipes=org.openrewrite.java.migrate.Java8toJava11 \
-        || log_warning "OpenRewrite migration completed with warnings"
+    if [ -n "$RECIPE_FILE" ]; then
+        log_info "Using recipe file: $RECIPE_FILE with recipe: $RECIPE_NAME"
+        mvn -U org.openrewrite.maven:rewrite-maven-plugin:5.40.0:run \
+            -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:2.26.1,org.openrewrite.recipe:rewrite-spring:5.21.0,org.openrewrite.recipe:rewrite-testing-frameworks:2.19.0 \
+            -Drewrite.configLocation="$RECIPE_FILE" \
+            -Drewrite.activeRecipes="$RECIPE_NAME" \
+            || log_warning "OpenRewrite migration completed with warnings"
+    else
+        log_info "Using default recipe: $RECIPE_NAME"
+        mvn -U org.openrewrite.maven:rewrite-maven-plugin:5.40.0:run \
+            -Drewrite.recipeArtifactCoordinates=org.openrewrite.recipe:rewrite-migrate-java:2.26.1 \
+            -Drewrite.activeRecipes="$RECIPE_NAME" \
+            || log_warning "OpenRewrite migration completed with warnings"
+    fi
     
     log_success "OpenRewrite migration applied!"
 }

@@ -11,12 +11,16 @@ This package contains everything you need to migrate Spring PetClinic (or any Sp
 | **migrate-java.sh** | Shell migration script | Main automation for Unix/Linux/macOS |
 | **migrate-java.py** | Python migration script | Cross-platform alternative |
 | **java-migration.yml** | GitHub Actions workflow | CI/CD automation |
+| **rewrite.yml** | OpenRewrite basic recipe | Dependency upgrade instructions |
+| **spring-petclinic-recipe.yml** | Comprehensive PetClinic recipe | Complete migration with all dependencies |
 | **README.md** | Main documentation | Overview and quick start |
 | **SETUP_GUIDE.md** | Detailed setup instructions | Step-by-step for beginners |
+| **RECIPE_GUIDE.md** | OpenRewrite recipe guide | How to use and customize recipes |
 | **TROUBLESHOOTING.md** | Problem solving guide | Fix common issues |
 | **QUICK_REFERENCE.md** | Cheat sheet | Quick command reference |
 | **WORKFLOW_DIAGRAM.md** | Visual workflow | Understand the process |
 | **openrewrite-plugin-config.xml** | OpenRewrite plugin config | Plugin configuration template |
+| **INSTALL.sh** | Installation script | Automated setup |
 
 ## 🚀 Quick Installation
 

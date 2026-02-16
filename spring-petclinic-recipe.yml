@@ -1,0 +1,317 @@
+---
+type: specs.openrewrite.org/v1beta/recipe
+name: com.petclinic.SpringPetClinicJava11Upgrade
+displayName: Complete Spring PetClinic Java 11 Upgrade
+description: |
+  Comprehensive migration recipe for Spring PetClinic application:
+  - Java 8 to Java 11
+  - Spring Boot 2.x upgrade
+  - All dependencies to Java 11 compatible versions
+  - JUnit 4 to JUnit 5
+  - Code modernization
+  
+tags:
+  - java11
+  - spring-boot
+  - petclinic
+  - migration
+
+recipeList:
+  #############################################################################
+  # PHASE 1: Core Java Migration
+  #############################################################################
+  
+  - org.openrewrite.java.migrate.Java8toJava11
+  - org.openrewrite.java.migrate.JavaVersion11
+  - org.openrewrite.java.migrate.UpgradeToJava11
+  
+  #############################################################################
+  # PHASE 2: Add Missing Java 11 Dependencies
+  #############################################################################
+  
+  # JAXB was removed from JDK 11
+  - org.openrewrite.java.migrate.javax.AddJaxbDependencies
+  - org.openrewrite.java.migrate.javax.AddJaxbRuntime
+  
+  # JAX-WS was removed from JDK 11
+  - org.openrewrite.java.migrate.javax.AddJaxwsDependencies
+  
+  # Add Annotation API
+  - org.openrewrite.java.dependencies.AddDependency:
+      groupId: javax.annotation
+      artifactId: javax.annotation-api
+      version: 1.3.2
+      onlyIfUsing: javax.annotation.*
+      acceptTransitive: true
+  
+  #############################################################################
+  # PHASE 3: Spring Boot Upgrade
+  #############################################################################
+  
+  # Upgrade to Spring Boot 2.7.x (latest 2.x compatible with Java 11)
+  - org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7
+  - org.openrewrite.java.spring.boot2.SpringBootProperties_2_7
+  
+  # Spring Framework 5.3.x
+  - org.openrewrite.java.spring.framework.UpgradeSpringFramework_5_3
+  
+  #############################################################################
+  # PHASE 4: Update Spring Boot Starters
+  #############################################################################
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-web
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-data-jpa
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-thymeleaf
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-cache
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-validation
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-test
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-actuator
+      newVersion: 2.7.18
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-devtools
+      newVersion: 2.7.18
+  
+  #############################################################################
+  # PHASE 5: Database Dependencies
+  #############################################################################
+  
+  # H2 Database (in-memory database used by PetClinic)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.h2database
+      artifactId: h2
+      newVersion: 2.2.224
+  
+  # MySQL Connector (if using MySQL)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: com.mysql
+      artifactId: mysql-connector-j
+      newVersion: 8.2.0
+  
+  # PostgreSQL Driver (if using PostgreSQL)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.postgresql
+      artifactId: postgresql
+      newVersion: 42.7.1
+  
+  # EHCache (caching implementation)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.ehcache
+      artifactId: ehcache
+      newVersion: 3.10.8
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: javax.cache
+      artifactId: cache-api
+      newVersion: 1.1.1
+  
+  #############################################################################
+  # PHASE 6: Testing Framework Updates
+  #############################################################################
+  
+  # JUnit 4 to JUnit 5 Migration
+  - org.openrewrite.java.testing.junit5.JUnit4to5Migration
+  - org.openrewrite.java.testing.junit5.AssertToAssertions
+  - org.openrewrite.java.testing.junit5.UpdateBeforeAfterAnnotations
+  - org.openrewrite.java.testing.junit5.IgnoreToDisabled
+  - org.openrewrite.java.testing.junit5.ExpectedExceptionToAssertThrows
+  
+  # Update JUnit Jupiter
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.junit.jupiter
+      artifactId: junit-jupiter
+      newVersion: 5.10.1
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.junit.jupiter
+      artifactId: junit-jupiter-api
+      newVersion: 5.10.1
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.junit.jupiter
+      artifactId: junit-jupiter-engine
+      newVersion: 5.10.1
+  
+  # Mockito 1.x to 4.x
+  - org.openrewrite.java.testing.mockito.Mockito1to4Migration
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.mockito
+      artifactId: mockito-core
+      newVersion: 5.8.0
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.mockito
+      artifactId: mockito-junit-jupiter
+      newVersion: 5.8.0
+  
+  # AssertJ (modern assertions)
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.assertj
+      artifactId: assertj-core
+      newVersion: 3.24.2
+  
+  # Hamcrest
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.hamcrest
+      artifactId: hamcrest
+      newVersion: 2.2
+  
+  #############################################################################
+  # PHASE 7: WebJars (Frontend Dependencies)
+  #############################################################################
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: bootstrap
+      newVersion: 5.3.2
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: jquery
+      newVersion: 3.7.1
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: jquery-ui
+      newVersion: 1.13.2
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.webjars
+      artifactId: webjars-locator-core
+      newVersion: 0.52
+  
+  #############################################################################
+  # PHASE 8: Maven Plugins
+  #############################################################################
+  
+  # Spring Boot Maven Plugin
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-maven-plugin
+      newVersion: 2.7.18
+  
+  # Maven Compiler Plugin
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-compiler-plugin
+      newVersion: 3.11.0
+  
+  # Maven Surefire Plugin (test execution)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-surefire-plugin
+      newVersion: 3.2.3
+  
+  # Maven Failsafe Plugin (integration tests)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-failsafe-plugin
+      newVersion: 3.2.3
+  
+  # Maven Resources Plugin
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-resources-plugin
+      newVersion: 3.3.1
+  
+  # Maven JAR Plugin
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: org.apache.maven.plugins
+      artifactId: maven-jar-plugin
+      newVersion: 3.3.0
+  
+  # Frontend Maven Plugin (if used)
+  - org.openrewrite.maven.UpgradePluginVersion:
+      groupId: com.github.eirslett
+      artifactId: frontend-maven-plugin
+      newVersion: 1.15.0
+  
+  #############################################################################
+  # PHASE 9: Validation & Hibernate
+  #############################################################################
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.hibernate.validator
+      artifactId: hibernate-validator
+      newVersion: 6.2.5.Final
+  
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: jakarta.validation
+      artifactId: jakarta.validation-api
+      newVersion: 2.0.2
+  
+  #############################################################################
+  # PHASE 10: Code Cleanup & Modernization
+  #############################################################################
+  
+  # Remove unused imports
+  - org.openrewrite.java.cleanup.RemoveUnusedImports
+  
+  # Use diamond operator (<>)
+  - org.openrewrite.java.cleanup.UseDiamondOperator
+  
+  # Remove unnecessary parentheses
+  - org.openrewrite.java.cleanup.UnnecessaryParentheses
+  
+  # Default case last in switch
+  - org.openrewrite.staticanalysis.DefaultComesLast
+  
+  # Empty blocks
+  - org.openrewrite.staticanalysis.EmptyBlock
+  
+  # Finalize local variables
+  - org.openrewrite.staticanalysis.FinalizeLocalVariables
+  
+  # Use var keyword where applicable (Java 11 feature)
+  - org.openrewrite.java.migrate.lang.UseVarKeyword
+  
+  # String isEmpty() instead of length() == 0
+  - org.openrewrite.java.migrate.lang.UseStringIsEmpty
+  
+  # StringBuilder over StringBuffer
+  - org.openrewrite.java.migrate.lang.StringBufferToStringBuilder
+  
+  # Modernize Date/Time API (java.util.Date to java.time)
+  - org.openrewrite.java.migrate.JavaUtilToJavaTime
+  
+  #############################################################################
+  # PHASE 11: Security Updates
+  #############################################################################
+  
+  # Update to address known vulnerabilities
+  - org.openrewrite.java.dependencies.DependencyVulnerabilityCheck
+  
+  #############################################################################
+  # PHASE 12: Property File Updates
+  #############################################################################
+  
+  # Update application.properties/yml for Spring Boot 2.7
+  - org.openrewrite.java.spring.boot2.SpringBootProperties_2_7

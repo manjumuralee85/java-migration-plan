@@ -152,21 +152,60 @@ def apply_openrewrite_migration():
     """Apply OpenRewrite migration recipes"""
     logger.info("Applying OpenRewrite migration recipes...")
     
-    # Check if OpenRewrite plugin exists
-    pom_path = Path(PROJECT_PATH) / "pom.xml"
-    pom_content = pom_path.read_text()
+    # Check for custom recipe file
+    recipe_file = None
+    recipe_name = "org.openrewrite.java.migrate.Java8toJava11"
     
-    if "rewrite-maven-plugin" not in pom_content:
-        print_colored("OpenRewrite plugin not found in pom.xml", Colors.YELLOW)
-        logger.info("You may need to add the OpenRewrite plugin manually")
+    pom_path = Path(PROJECT_PATH) / "pom.xml"
+    
+    # Look for recipe files
+    if (Path(PROJECT_PATH) / "rewrite.yml").exists():
+        recipe_file = "rewrite.yml"
+        recipe_name = "com.petclinic.SpringPetClinicJava11Upgrade"
+        logger.info(f"Found custom recipe file: {recipe_file}")
+    elif (Path(PROJECT_PATH) / "spring-petclinic-recipe.yml").exists():
+        recipe_file = "spring-petclinic-recipe.yml"
+        recipe_name = "com.petclinic.SpringPetClinicJava11Upgrade"
+        logger.info(f"Found custom recipe file: {recipe_file}")
+    elif (Path(PROJECT_PATH) / ".mvn" / "rewrite.yml").exists():
+        recipe_file = ".mvn/rewrite.yml"
+        recipe_name = "com.petclinic.SpringPetClinicJava11Upgrade"
+        logger.info(f"Found custom recipe file: {recipe_file}")
+    else:
+        print_colored("No custom recipe file found. Using default recipes.", Colors.YELLOW)
+    
+    # Check if OpenRewrite plugin exists
+    if pom_path.exists():
+        pom_content = pom_path.read_text()
+        
+        if "rewrite-maven-plugin" not in pom_content:
+            print_colored("OpenRewrite plugin not found in pom.xml", Colors.YELLOW)
+            logger.info("You may need to add the OpenRewrite plugin manually")
     
     # Run OpenRewrite migration
-    logger.info("Running OpenRewrite migration to Java 11...")
-    returncode, stdout, stderr = run_command(
-        "mvn -U org.openrewrite.maven:rewrite-maven-plugin:run "
-        "-Drewrite.activeRecipes=org.openrewrite.java.migrate.Java8toJava11",
-        check=False
-    )
+    logger.info(f"Running OpenRewrite migration to Java 11...")
+    
+    if recipe_file:
+        logger.info(f"Using recipe file: {recipe_file} with recipe: {recipe_name}")
+        cmd = (
+            "mvn -U org.openrewrite.maven:rewrite-maven-plugin:5.40.0:run "
+            "-Drewrite.recipeArtifactCoordinates="
+            "org.openrewrite.recipe:rewrite-migrate-java:2.26.1,"
+            "org.openrewrite.recipe:rewrite-spring:5.21.0,"
+            "org.openrewrite.recipe:rewrite-testing-frameworks:2.19.0 "
+            f"-Drewrite.configLocation={recipe_file} "
+            f"-Drewrite.activeRecipes={recipe_name}"
+        )
+    else:
+        logger.info(f"Using default recipe: {recipe_name}")
+        cmd = (
+            "mvn -U org.openrewrite.maven:rewrite-maven-plugin:5.40.0:run "
+            "-Drewrite.recipeArtifactCoordinates="
+            "org.openrewrite.recipe:rewrite-migrate-java:2.26.1 "
+            f"-Drewrite.activeRecipes={recipe_name}"
+        )
+    
+    returncode, stdout, stderr = run_command(cmd, check=False)
     
     if returncode == 0:
         print_colored("OpenRewrite migration applied!", Colors.GREEN)
