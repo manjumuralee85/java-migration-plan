@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  OpenRewrite Maven Plugin Configuration
+  Add this plugin to your pom.xml <build><plugins> section
+-->
+<plugin>
+    <groupId>org.openrewrite.maven</groupId>
+    <artifactId>rewrite-maven-plugin</artifactId>
+    <version>5.40.0</version>
+    <configuration>
+        <!-- Recipes to apply for Java 8 to 11 migration -->
+        <activeRecipes>
+            <!-- Main migration recipe -->
+            <recipe>org.openrewrite.java.migrate.Java8toJava11</recipe>
+            
+            <!-- Additional recommended recipes -->
+            <recipe>org.openrewrite.java.migrate.UpgradeToJava11</recipe>
+            <recipe>org.openrewrite.java.migrate.javax.AddJaxbDependencies</recipe>
+            <recipe>org.openrewrite.java.migrate.javax.AddJaxwsDependencies</recipe>
+            <recipe>org.openrewrite.java.migrate.JavaVersion11</recipe>
+        </activeRecipes>
+        
+        <!-- Optional: Configure execution options -->
+        <exportDatatables>true</exportDatatables>
+        <failOnDryRunResults>false</failOnDryRunResults>
+    </configuration>
+    
+    <dependencies>
+        <!-- Migration recipes dependency -->
+        <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-migrate-java</artifactId>
+            <version>2.26.1</version>
+        </dependency>
+        
+        <!-- Spring recipes (if using Spring Boot) -->
+        <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-spring</artifactId>
+            <version>5.21.0</version>
+        </dependency>
+        
+        <!-- Testing recipes -->
+        <dependency>
+            <groupId>org.openrewrite.recipe</groupId>
+            <artifactId>rewrite-testing-frameworks</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+    </dependencies>
+    
+    <executions>
+        <!-- Optional: Run during build -->
+        <!--
+        <execution>
+            <id>rewrite</id>
+            <goals>
+                <goal>run</goal>
+            </goals>
+        </execution>
+        -->
+    </executions>
+</plugin>
